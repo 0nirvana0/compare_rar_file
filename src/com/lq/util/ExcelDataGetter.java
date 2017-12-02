@@ -25,6 +25,4 @@ public class ExcelDataGetter extends ExcelReader {
 		return listCallRecord;
 	}
 
-	
-
 }
