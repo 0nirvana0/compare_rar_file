@@ -22,4 +22,8 @@ public class CompareController {
 		}
 		return outFiles;
 	}
+
+	public void writeExcel(List<Object[]> comparedData, String path) {
+		writer.writeOut(comparedData, path);
+	}
 }

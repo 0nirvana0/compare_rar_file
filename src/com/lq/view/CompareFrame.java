@@ -3,6 +3,7 @@ package com.lq.view;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Point;
 import java.awt.SystemColor;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -76,23 +77,36 @@ public class CompareFrame extends JFrame {
 		contentPane.setLayout(null);
 
 		JProgressBar progressBar = new JProgressBar();
-		progressBar.setStringPainted(true);
 		progressBar.setBounds(0, 312, 503, 14);
+		progressBar.setStringPainted(true);
 		contentPane.add(progressBar);
 
 		JLabel label = new JLabel("数据集:");
+		label.setBounds(69, 10, 98, 41);
 		label.setForeground(Color.DARK_GRAY);
 		label.setFont(new Font("宋体", Font.PLAIN, 14));
-		label.setBounds(69, 10, 98, 41);
 		contentPane.add(label);
 
 		rarPath = new JTextField();
+		rarPath.setBounds(132, 16, 304, 29);
+		rarPath.setForeground(Color.BLACK);
 		rarPath.setText(properties.getProperty("rarPath"));
 		rarPath.setColumns(10);
-		rarPath.setBounds(132, 16, 304, 29);
 		contentPane.add(rarPath);
 
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(132, 159, 304, 82);
+		contentPane.add(scrollPane);
+
+		JTextArea infoText = new JTextArea();
+		scrollPane.setViewportView(infoText);
+		infoText.setEditable(false);
+		infoText.setFont(new Font("Monospaced", Font.PLAIN, 14));
+		infoText.setForeground(Color.BLACK);
+		infoText.setText("...");
+
 		JButton rarButton = new JButton("...");
+		rarButton.setBounds(448, 16, 35, 29);
 		rarButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fcDlg = new JFileChooser();
@@ -117,10 +131,10 @@ public class CompareFrame extends JFrame {
 		rarButton.setForeground(SystemColor.activeCaption);
 		rarButton.setFont(new Font("宋体", Font.PLAIN, 15));
 		rarButton.setBackground(new Color(211, 211, 211));
-		rarButton.setBounds(448, 16, 35, 29);
 		contentPane.add(rarButton);
 
 		JButton folderButton = new JButton("...");
+		folderButton.setBounds(448, 64, 35, 29);
 		folderButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fcDlg = new JFileChooser();
@@ -143,21 +157,21 @@ public class CompareFrame extends JFrame {
 		folderButton.setForeground(SystemColor.activeCaption);
 		folderButton.setFont(new Font("宋体", Font.PLAIN, 15));
 		folderButton.setBackground(new Color(211, 211, 211));
-		folderButton.setBounds(448, 64, 35, 29);
 		contentPane.add(folderButton);
 
 		folderPath = new JTextField();
+		folderPath.setBounds(132, 65, 304, 29);
 		folderPath.setText(properties.getProperty("folderPath"));
 		folderPath.setColumns(10);
-		folderPath.setBounds(132, 65, 304, 29);
 		contentPane.add(folderPath);
 
 		JLabel label_1 = new JLabel("待检索文件夹：");
-		label_1.setFont(new Font("宋体", Font.PLAIN, 14));
 		label_1.setBounds(28, 64, 111, 29);
+		label_1.setFont(new Font("宋体", Font.PLAIN, 14));
 		contentPane.add(label_1);
 
 		JButton outButton = new JButton("...");
+		outButton.setBounds(448, 120, 35, 29);
 		outButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fcDlg = new JFileChooser();
@@ -186,71 +200,84 @@ public class CompareFrame extends JFrame {
 		outButton.setForeground(SystemColor.activeCaption);
 		outButton.setFont(new Font("宋体", Font.PLAIN, 15));
 		outButton.setBackground(new Color(211, 211, 211));
-		outButton.setBounds(448, 120, 35, 29);
 		contentPane.add(outButton);
 
 		outPath = new JTextField();
+		outPath.setBounds(132, 120, 304, 29);
 		outPath.setText(properties.getProperty("outPath"));
 		outPath.setColumns(10);
-		outPath.setBounds(132, 120, 304, 29);
 		contentPane.add(outPath);
 
 		JLabel label_2 = new JLabel("填写统计表路径:");
-		label_2.setFont(new Font("宋体", Font.PLAIN, 14));
 		label_2.setBounds(21, 120, 118, 29);
+		label_2.setFont(new Font("宋体", Font.PLAIN, 14));
 		contentPane.add(label_2);
-
-		JTextArea infoText = new JTextArea();
-		infoText.setText("...");
-		infoText.setEditable(false);
-		infoText.setEnabled(false);
-		infoText.setBounds(132, 159, 304, 74);
-		JScrollPane scroller = new JScrollPane(infoText);
-		contentPane.add(scroller);
 
 		// 检索逻辑
 		JButton compareButton = new JButton("开始检索");
+		compareButton.setBounds(205, 251, 111, 41);
 		compareButton.addActionListener(new ActionListener() {
-			List<File> files = new ArrayList<File>();
 
 			// 开始解压
 			public void actionPerformed(ActionEvent e) {
-				infoText.append("开始解压...");
+				infoText.setText("");
+				infoText.paintImmediately(infoText.getBounds());
+				infoText.append("\n开始解压...");
+			
+				progressBar.setValue(0); // 进度值
+				progressBar.paintImmediately(progressBar.getBounds());
+				List<File> files = new ArrayList<File>();
 				RarUtil rarUtil = new RarUtil() {
 					@Override
 					protected void getFiles(File file, int folderSize, int i) {
 
 						progressBar.setValue(i * 100 / folderSize); // 进度值
+						progressBar.paintImmediately(progressBar.getBounds());
+
 						if (file.isFile()) {
+
 							files.add(file);
-							infoText.append("  " + file.getName());
+							infoText.append("\n  " + file.getName());
+
+							// System.out.println(file.getName() + " " + i * 100
+							// / folderSize);
+							// try {
+							// Thread.sleep(1000);
+							// } catch (InterruptedException e) {
+							// // TODO Auto-generated catch block
+							// e.printStackTrace();
+							// }
+							// int height = 10;
+							// Point p = new Point();
+							// p.setLocation(0, infoText.getLineCount() *
+							// height);
+							// scrollPane.getViewport().setViewPosition(p);
+							// infoText.paintImmediately(infoText.getBounds());
+
 						}
 
 					}
 				};
-				File outPath = null;
+				File outPathFile = null;
 				try {
-					FileUtil.deleteAllFilesOfDir(outPath);
-					outPath = File.createTempFile("COMPARE_FF", "OO");
+					outPathFile = File.createTempFile("COMPARE_FF", "00");
+					outPathFile.delete();
+					rarUtil.unRarAllFile(rarPath.getText(), outPathFile.getAbsolutePath());
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
-				rarUtil.unRarAllFile(rarPath.getText(), outPath.getAbsolutePath());
-				FileUtil.deleteAllFilesOfDir(outPath);
+
 				// 解压完成，开始检索...
-				infoText.append("    解压完成，开始检索...");
+				infoText.append("\n  解压完成，开始检索...");
+				infoText.paintImmediately(infoText.getBounds());
 				File[] compareFiles = FileUtil.searchFile(new File(folderPath.getText()));
 				// 待扫描的数据集 数据集 比对
-				// boot.jar /uu/boot.jar same
-				// different（数据集在指定路径有这个文件，但是大小不一样）
-				// same（数据集在指定路径有这个文件，且大小一样）
-				// nofind（数据集在指定路径没有这个文件）
-				List<String[]> comparedData = new ArrayList<String[]>();
+				List<Object[]> comparedData = new ArrayList<Object[]>();
 				comparedData.add(new String[] { "待扫描的数据集", "数据集", "比对" });
 				String compareFilePath = "";
 				String rarFilePath = "";
 				String result = "";
-				String[] outDatas;
+				Object[] outDatas;
 				for (File compareFile : compareFiles) {
 
 					List<File> findData = compareController.compare(compareFile, files);
@@ -260,33 +287,38 @@ public class CompareFrame extends JFrame {
 						result = "nofind";
 						outDatas = new String[] { compareFilePath, rarFilePath, result };
 						comparedData.add(outDatas);
-						infoText.append("..." + Arrays.toString(outDatas));
+						infoText.append("\n..." + Arrays.toString(outDatas));
+						infoText.paintImmediately(infoText.getBounds());
 					} else {
 						for (File file : findData) {
 							rarFilePath = file.getPath();
+							rarFilePath = rarFilePath.replace(outPathFile.getPath(), "");
 							if (file.length() == compareFile.length()) {
 								result = "same";
 							} else {
 								result = "different";
 							}
-							outDatas = new String[] { compareFilePath, rarFilePath, result };
+							outDatas = new Object[] { compareFilePath, rarFilePath, result };
 							comparedData.add(outDatas);
-							infoText.append("..." + Arrays.toString(outDatas));
-
+							infoText.append("\n..." + Arrays.toString(outDatas));
+							infoText.paintImmediately(infoText.getBounds());
 						}
 					}
-
 				}
 				// 检索完成...
-				infoText.append("    检索完成...");
+				infoText.append("\n  检索完成...");
+				infoText.paintImmediately(infoText.getBounds());
+				compareController.writeExcel(comparedData, outPath.getText());
 
+				progressBar.setValue(100); // 进度值
 				progressBar.setString("检索完成."); // 提示信息
+				FileUtil.deleteAllFilesOfDir(outPathFile);
 			}
 		});
 		compareButton.setForeground(Color.BLACK);
 		compareButton.setFont(new Font("宋体", Font.PLAIN, 14));
 		compareButton.setBackground(new Color(100, 149, 237));
-		compareButton.setBounds(205, 251, 111, 41);
 		contentPane.add(compareButton);
+
 	}
 }
