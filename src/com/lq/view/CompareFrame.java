@@ -3,7 +3,6 @@ package com.lq.view;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Font;
-import java.awt.Point;
 import java.awt.SystemColor;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -220,100 +219,96 @@ public class CompareFrame extends JFrame {
 
 			// 开始解压
 			public void actionPerformed(ActionEvent e) {
-				infoText.setText("");
-				infoText.paintImmediately(infoText.getBounds());
-				infoText.append("\n开始解压...");
-			
-				progressBar.setValue(0); // 进度值
-				progressBar.paintImmediately(progressBar.getBounds());
-				List<File> files = new ArrayList<File>();
-				RarUtil rarUtil = new RarUtil() {
-					@Override
-					protected void getFiles(File file, int folderSize, int i) {
 
-						progressBar.setValue(i * 100 / folderSize); // 进度值
-						progressBar.paintImmediately(progressBar.getBounds());
+				Thread thread = new Thread(new Runnable() {
+					public void run() {
+						compareButton.setEnabled(false);
+						infoText.setText("");
+						infoText.append("开始解压...\n");
 
-						if (file.isFile()) {
+						progressBar.setValue(0); // 进度值
 
-							files.add(file);
-							infoText.append("\n  " + file.getName());
+						List<File> files = new ArrayList<File>();
+						RarUtil rarUtil = new RarUtil() {
+							@Override
+							protected void getFiles(File file, int folderSize, int i) {
 
-							// System.out.println(file.getName() + " " + i * 100
-							// / folderSize);
-							// try {
-							// Thread.sleep(1000);
-							// } catch (InterruptedException e) {
-							// // TODO Auto-generated catch block
-							// e.printStackTrace();
-							// }
-							// int height = 10;
-							// Point p = new Point();
-							// p.setLocation(0, infoText.getLineCount() *
-							// height);
-							// scrollPane.getViewport().setViewPosition(p);
-							// infoText.paintImmediately(infoText.getBounds());
+								progressBar.setValue(i * 100 / folderSize); // 进度值
 
-						}
+								if (file.isFile()) {
 
-					}
-				};
-				File outPathFile = null;
-				try {
-					outPathFile = File.createTempFile("COMPARE_FF", "00");
-					outPathFile.delete();
-					rarUtil.unRarAllFile(rarPath.getText(), outPathFile.getAbsolutePath());
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
+									files.add(file);
+									infoText.append(file.getName() + "\n  ");
+									infoText.setCaretPosition(infoText.getDocument().getLength());
+								}
 
-				// 解压完成，开始检索...
-				infoText.append("\n  解压完成，开始检索...");
-				infoText.paintImmediately(infoText.getBounds());
-				File[] compareFiles = FileUtil.searchFile(new File(folderPath.getText()));
-				// 待扫描的数据集 数据集 比对
-				List<Object[]> comparedData = new ArrayList<Object[]>();
-				comparedData.add(new String[] { "待扫描的数据集", "数据集", "比对" });
-				String compareFilePath = "";
-				String rarFilePath = "";
-				String result = "";
-				Object[] outDatas;
-				for (File compareFile : compareFiles) {
-
-					List<File> findData = compareController.compare(compareFile, files);
-					compareFilePath = compareFile.getAbsolutePath();
-					if (findData.size() == 0) {
-						rarFilePath = "无";
-						result = "nofind";
-						outDatas = new String[] { compareFilePath, rarFilePath, result };
-						comparedData.add(outDatas);
-						infoText.append("\n..." + Arrays.toString(outDatas));
-						infoText.paintImmediately(infoText.getBounds());
-					} else {
-						for (File file : findData) {
-							rarFilePath = file.getPath();
-							rarFilePath = rarFilePath.replace(outPathFile.getPath(), "");
-							if (file.length() == compareFile.length()) {
-								result = "same";
-							} else {
-								result = "different";
 							}
-							outDatas = new Object[] { compareFilePath, rarFilePath, result };
-							comparedData.add(outDatas);
-							infoText.append("\n..." + Arrays.toString(outDatas));
-							infoText.paintImmediately(infoText.getBounds());
+						};
+						File outPathFile = null;
+						try {
+							outPathFile = File.createTempFile("COMPARE_FF", "00");
+							outPathFile.delete();
+							rarUtil.unRarAllFile(rarPath.getText(), outPathFile.getAbsolutePath());
+						} catch (IOException e1) {
+							e1.printStackTrace();
 						}
-					}
-				}
-				// 检索完成...
-				infoText.append("\n  检索完成...");
-				infoText.paintImmediately(infoText.getBounds());
-				compareController.writeExcel(comparedData, outPath.getText());
 
-				progressBar.setValue(100); // 进度值
-				progressBar.setString("检索完成."); // 提示信息
-				FileUtil.deleteAllFilesOfDir(outPathFile);
+						// 解压完成，开始检索...
+						infoText.append("解压完成，开始检索..." + "...\n");
+
+						File[] compareFiles = FileUtil.searchFile(new File(folderPath.getText()));
+						// 待扫描的数据集 数据集 比对
+						List<Object[]> comparedData = new ArrayList<Object[]>();
+						comparedData.add(new String[] { "待扫描的数据集", "数据集", "比对" });
+						String compareFilePath = "";
+						String rarFilePath = "";
+						String result = "";
+						Object[] outDatas;
+						for (File compareFile : compareFiles) {
+
+							List<File> findData = compareController.compare(compareFile, files);
+							compareFilePath = compareFile.getAbsolutePath();
+							if (findData.size() == 0) {
+								rarFilePath = "无";
+								result = "nofind";
+								outDatas = new String[] { compareFilePath, rarFilePath, result };
+								comparedData.add(outDatas);
+								infoText.append(Arrays.toString(outDatas) + "...\n");
+
+							} else {
+								for (File file : findData) {
+									rarFilePath = file.getPath();
+									rarFilePath = rarFilePath.replace(outPathFile.getPath(), "");
+									if (file.length() == compareFile.length()) {
+										result = "same";
+									} else {
+										result = "different";
+									}
+									outDatas = new Object[] { compareFilePath, rarFilePath, result };
+									comparedData.add(outDatas);
+									infoText.append(Arrays.toString(outDatas) + "...\n");
+
+								}
+							}
+						}
+						// 检索完成...
+						infoText.append("检索完成...");
+						infoText.setCaretPosition(infoText.getDocument().getLength());
+
+						compareController.writeExcel(comparedData, outPath.getText());
+
+						progressBar.setValue(100); // 进度值
+						// progressBar.setString("检索完成."); // 提示信息
+						FileUtil.deleteAllFilesOfDir(outPathFile);
+
+						compareButton.setEnabled(true);
+					}
+
+				});
+				thread.start();
+
 			}
+
 		});
 		compareButton.setForeground(Color.BLACK);
 		compareButton.setFont(new Font("宋体", Font.PLAIN, 14));

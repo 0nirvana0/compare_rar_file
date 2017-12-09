@@ -1,12 +1,15 @@
 package com.lq.test;
 
-import java.awt.FlowLayout;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JProgressBar;
 
 public class JProgressBarTest extends JFrame {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public JProgressBarTest() {
 		super();
 		setTitle("表格");
