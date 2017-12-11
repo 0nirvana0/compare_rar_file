@@ -26,9 +26,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import com.lq.controller.CompareController;
+import com.lq.util.CompressUtil;
 import com.lq.util.FileUtil;
 import com.lq.util.PropertiesUtil;
-import com.lq.util.RarUtil;
 
 public class CompareFrame extends JFrame {
 
@@ -66,7 +66,7 @@ public class CompareFrame extends JFrame {
 	public CompareFrame() {
 		setIconImage(Toolkit.getDefaultToolkit()
 				.getImage(CompareFrame.class.getResource("/com/sun/java/swing/plaf/motif/icons/DesktopIcon.gif")));
-		setTitle("文件对比器 v1.0");
+		setTitle("文件对比器 v1.1");
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 509, 355);
@@ -110,7 +110,7 @@ public class CompareFrame extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fcDlg = new JFileChooser();
 				fcDlg.setDialogTitle("请选择rar数据集...");
-				FileNameExtensionFilter filter = new FileNameExtensionFilter("rar文件(*.rar;)", "rar");
+				FileNameExtensionFilter filter = new FileNameExtensionFilter("压缩文件(*.rar;*.zip;)", "rar", "zip");
 				fcDlg.setFileFilter(filter);
 				String o = properties.getProperty("rarPath");
 				if (o == null || o.isEmpty()) {
@@ -229,7 +229,8 @@ public class CompareFrame extends JFrame {
 						progressBar.setValue(0); // 进度值
 
 						List<File> files = new ArrayList<File>();
-						RarUtil rarUtil = new RarUtil() {
+
+						CompressUtil compressUtil = new CompressUtil() {
 							@Override
 							protected void getFiles(File file, int folderSize, int i) {
 
@@ -248,7 +249,7 @@ public class CompareFrame extends JFrame {
 						try {
 							outPathFile = File.createTempFile("COMPARE_FF", "00");
 							outPathFile.delete();
-							rarUtil.unRarAllFile(rarPath.getText(), outPathFile.getAbsolutePath());
+							compressUtil.unCompressAllFile(rarPath.getText(), outPathFile.getAbsolutePath());
 						} catch (IOException e1) {
 							e1.printStackTrace();
 						}
@@ -300,7 +301,6 @@ public class CompareFrame extends JFrame {
 						progressBar.setValue(100); // 进度值
 						// progressBar.setString("检索完成."); // 提示信息
 						FileUtil.deleteAllFilesOfDir(outPathFile);
-
 						compareButton.setEnabled(true);
 					}
 
